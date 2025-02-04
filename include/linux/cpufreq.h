@@ -530,7 +530,10 @@ unsigned int cpufreq_policy_transition_delay_us(struct cpufreq_policy *policy);
 int cpufreq_register_governor(struct cpufreq_governor *governor);
 void cpufreq_unregister_governor(struct cpufreq_governor *governor);
 
-struct cpufreq_governor *cpufreq_default_governor(void);
+/*struct cpufreq_governor *cpufreq_default_governor(void);*/
+#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_STROMBREAKER)
+extern struct cpufreq_governor cpufreq_gov_strombreaker;
+#define CPUFREQ_DEFAULT_GOVERNOR (&cpufreq_gov_strombreaker)
 struct cpufreq_governor *cpufreq_fallback_governor(void);
 
 static inline void cpufreq_policy_apply_limits(struct cpufreq_policy *policy)
