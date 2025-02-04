@@ -121,6 +121,9 @@ enum msm_mdp_plane_property {
 	PLANE_PROP_PREFILL_TIME,
 	PLANE_PROP_SCALER_V1,
 	PLANE_PROP_SCALER_V2,
+#ifdef OPLUS_BUG_STABILITY
+	PLANE_PROP_CUSTOM,
+#endif /* OPLUS_BUG_STABILITY */
 	PLANE_PROP_INVERSE_PMA,
 
 	/* enum/bitmask properties */
@@ -160,6 +163,9 @@ enum msm_mdp_crtc_property {
 	CRTC_PROP_SECURITY_LEVEL,
 	CRTC_PROP_IDLE_TIMEOUT,
 	CRTC_PROP_DEST_SCALER,
+#ifdef OPLUS_BUG_STABILITY
+	CRTC_PROP_CUSTOM,
+#endif
 	CRTC_PROP_CAPTURE_OUTPUT,
 
 	CRTC_PROP_IDLE_PC_STATE,
@@ -190,6 +196,9 @@ enum msm_mdp_conn_property {
 	CONNECTOR_PROP_ROI_V1,
 	CONNECTOR_PROP_BL_SCALE,
 	CONNECTOR_PROP_SV_BL_SCALE,
+#ifdef OPLUS_BUG_STABILITY
+	CONNECTOR_PROP_CUSTOM,
+#endif
 	CONNECTOR_PROP_SUPPORTED_COLORSPACES,
 
 	/* enum/bitmask properties */
@@ -512,6 +521,7 @@ struct msm_resource_caps_info {
  *				 used instead of panel TE in cmd mode panels
  * @roi_caps:           Region of interest capability info
  * @qsync_min_fps	Minimum fps supported by Qsync feature
+ * @has_qsync_min_fps_list True if dsi-supported-qsync-min-fps-list exits
  * @te_source		vsync source pin information
  */
 struct msm_display_info {
@@ -535,6 +545,8 @@ struct msm_display_info {
 	struct msm_roi_caps roi_caps;
 
 	uint32_t qsync_min_fps;
+	bool has_qsync_min_fps_list;
+
 	uint32_t te_source;
 };
 

@@ -19,6 +19,9 @@
 #include "dsi_ctrl.h"
 #include "dsi_phy.h"
 #include "dsi_panel.h"
+#ifdef OPLUS_BUG_STABILITY
+#include "dsi_oplus_support.h"
+#endif /*OPLUS_BUG_STABILITY*/
 
 #define MAX_DSI_CTRLS_PER_DISPLAY             2
 #define DSI_CLIENT_NAME_SIZE		20
@@ -272,6 +275,10 @@ struct dsi_display {
 
 	u32 te_source;
 	u32 clk_gating_config;
+#ifdef OPLUS_BUG_STABILITY
+/* liuzhizun, 2020/07/17, modify for dsi dump*/
+	u32 prev_clk;
+#endif
 	bool queue_cmd_waits;
 	struct workqueue_struct *dma_cmd_workq;
 };
@@ -393,6 +400,16 @@ void dsi_display_put_mode(struct dsi_display *display,
  * Return: error code.
  */
 int dsi_display_get_default_lms(void *dsi_display, u32 *num_lm);
+
+/**
+ * dsi_display_get_qsync_min_fps() - get qsync min fps for given fps
+ * @display:            Handle to display.
+ * @mode_fps:           Fps value of current mode
+ *
+ * Return: error code.
+ */
+int dsi_display_get_qsync_min_fps(void *dsi_display, u32 mode_fps);
+
 
 /**
  * dsi_display_find_mode() - retrieve cached DSI mode given relevant params
@@ -715,6 +732,15 @@ enum dsi_pixel_format dsi_display_get_dst_format(
  * Return: Zero on Success
  */
 int dsi_display_cont_splash_config(void *display);
+
+#ifdef OPLUS_BUG_STABILITY
+struct dsi_display *get_main_display(void);
+
+/* Add for implement panel register read */
+int dsi_host_alloc_cmd_tx_buffer(struct dsi_display *display);
+int dsi_display_cmd_engine_enable(struct dsi_display *display);
+int dsi_display_cmd_engine_disable(struct dsi_display *display);
+#endif
 /*
  * dsi_display_get_panel_vfp - get panel vsync
  * @display: Pointer to private display structure

@@ -20,6 +20,13 @@
 #include "dsi_pwr.h"
 #include "dsi_parser.h"
 #include "msm_drv.h"
+#ifdef OPLUS_BUG_STABILITY
+#include "dsi_oplus_support.h"
+struct oplus_brightness_alpha {
+	u32 brightness;
+	u32 alpha;
+};
+#endif /*OPLUS_BUG_STABILITY*/
 
 #define MAX_BL_LEVEL 4096
 #define MAX_BL_SCALE_LEVEL 1024
@@ -84,6 +91,13 @@ struct dsi_dfps_capabilities {
 	bool dfps_support;
 };
 
+struct dsi_qsync_capabilities {
+	/* qsync disabled if qsync_min_fps = 0 */
+	u32 qsync_min_fps;
+	u32 *qsync_min_fps_list;
+	int qsync_min_fps_list_len;
+};
+
 struct dsi_dyn_clk_caps {
 	bool dyn_clk_support;
 	u32 *bit_clk_list;
@@ -104,14 +118,6 @@ struct dsi_panel_phy_props {
 	enum dsi_panel_rotation rotation;
 };
 
-struct dsi_whitep_display_para {
-	int white_point_x;
-	int white_point_y;
-	u32 white_point_r;
-	u32 white_point_g;
-	u32 white_point_b;
-};
-
 struct dsi_backlight_config {
 	enum dsi_backlight_type type;
 	enum bl_update_flag bl_update;
@@ -119,6 +125,12 @@ struct dsi_backlight_config {
 	u32 bl_min_level;
 	u32 bl_max_level;
 	u32 brightness_max_level;
+#ifdef OPLUS_BUG_STABILITY
+	u32 bl_normal_max_level;
+	u32 brightness_normal_max_level;
+	u32 brightness_default_level;
+#endif /* OPLUS_BUG_STABILITY */
+
 	u32 bl_level;
 	u32 bl_scale;
 	u32 bl_scale_sv;
@@ -172,6 +184,21 @@ struct drm_panel_esd_config {
 	u32 groups;
 };
 
+#ifdef OPLUS_BUG_STABILITY
+struct dsi_panel_oplus_privite {
+	const char *vendor_name;
+	const char *manufacture_name;
+	bool skip_mipi_last_cmd;
+	bool is_aod_ramless;
+	struct oplus_brightness_alpha *bl_remap;
+	int bl_remap_count;
+	bool dfps_idle_off;
+	bool brightness_alpha_rum;
+	bool bl_interpolate_nosub;
+	bool panel_cabc_soda;
+};
+#endif /* OPLUS_BUG_STABILITY */
+
 struct dsi_panel {
 	const char *name;
 	const char *type;
@@ -215,12 +242,31 @@ struct dsi_panel {
 
 	bool panel_initialized;
 	bool te_using_watchdog_timer;
-	u32 qsync_min_fps;
+	struct dsi_qsync_capabilities qsync_caps;
 
 	char dsc_pps_cmd[DSI_CMD_PPS_SIZE];
 	enum dsi_dms_mode dms_mode;
 
 	bool sync_broadcast_en;
+#ifdef OPLUS_BUG_STABILITY
+	bool is_hbm_enabled;
+	/* Fix aod flash problem */
+	bool need_power_on_backlight;
+	int avdd_check_gpio;
+	int avdd_out_gpio;
+	int avdd_out_plus_num;
+	int post_on_delay;
+	struct clk *iris_clk;
+	int iris_rst_gpio;
+	int abyp_gpio;
+	int abyp_status_gpio;
+	int iris_osd_gpio;
+	bool iris_osd_autorefresh;
+	int iris_vdd_gpio;
+	struct oplus_brightness_alpha *ba_seq;
+	int ba_count;
+	struct dsi_panel_oplus_privite oplus_priv;
+#endif
 
 	int panel_test_gpio;
 	int power_mode;
@@ -305,8 +351,6 @@ int dsi_panel_pre_disable(struct dsi_panel *panel);
 
 int dsi_panel_disable(struct dsi_panel *panel);
 
-int dsi_panel_set_feature(struct dsi_panel *panel,enum dsi_cmd_set_type type);
-
 int dsi_panel_unprepare(struct dsi_panel *panel);
 
 int dsi_panel_post_unprepare(struct dsi_panel *panel);
@@ -346,5 +390,8 @@ void dsi_panel_ext_bridge_put(struct dsi_panel *panel);
 
 void dsi_panel_calc_dsi_transfer_time(struct dsi_host_common_cfg *config,
 		struct dsi_display_mode *mode, u32 frame_threshold_us);
-
+#ifdef OPLUS_BUG_STABILITY
+int dsi_panel_tx_cmd_set(struct dsi_panel *panel,
+			   enum dsi_cmd_set_type type);
+#endif
 #endif /* _DSI_PANEL_H_ */
